@@ -1,0 +1,3 @@
+PyQt6>=6.5
+pynput>=1.7.6
+vgamepad>=0.1.0 ; sys_platform == "win32"

@@ -1,0 +1,21 @@
+{
+  "image_file": "controller_reference.png",
+  "hit_radius_frac": 0.036,
+  "points": {
+    "LS_CLICK": [0.372, 0.362],
+    "RS_CLICK": [0.603, 0.500],
+    "DPAD": [0.443, 0.512],
+    "Y": [0.672, 0.327],
+    "X": [0.632, 0.380],
+    "B": [0.712, 0.385],
+    "A": [0.672, 0.4375],
+    "BACK": [0.480, 0.377],
+    "START": [0.564, 0.377],
+    "GUIDE": [0.519, 0.297],
+    "LB": [0.395, 0.252],
+    "RB": [0.625, 0.252],
+    "LEFT_TRIGGER": [0.325, 0.238],
+    "RIGHT_TRIGGER": [0.700, 0.238]
+  },
+  "note": "Normalised (0..1) positions of each control on controller_reference.png. LB/RB/LT/RT are approximate because the photo is a straight-on front shot. Use Settings > Appearance > Recalibrate to fine-tune, or load your own photo."
+}

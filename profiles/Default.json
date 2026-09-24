@@ -1,0 +1,69 @@
+{
+  "name": "Default",
+  "description": "General-purpose layout: WASD movement, mouse look, clicks on the triggers.",
+  "bindings": {
+    "LEFT_STICK_UP": [
+      "w"
+    ],
+    "LEFT_STICK_DOWN": [
+      "s"
+    ],
+    "LEFT_STICK_LEFT": [
+      "a"
+    ],
+    "LEFT_STICK_RIGHT": [
+      "d"
+    ],
+    "A": [
+      "space"
+    ],
+    "B": [
+      "shift"
+    ],
+    "X": [
+      "e"
+    ],
+    "Y": [
+      "q"
+    ],
+    "LB": [
+      "f"
+    ],
+    "RB": [
+      "r"
+    ],
+    "LS_CLICK": [
+      "ctrl"
+    ],
+    "LEFT_TRIGGER": [
+      "mouse_right"
+    ],
+    "RIGHT_TRIGGER": [
+      "mouse_left"
+    ],
+    "DPAD_UP": [
+      "up"
+    ],
+    "DPAD_DOWN": [
+      "down"
+    ],
+    "DPAD_LEFT": [
+      "left"
+    ],
+    "DPAD_RIGHT": [
+      "right"
+    ],
+    "START": [
+      "enter"
+    ],
+    "BACK": [
+      "backspace"
+    ]
+  },
+  "modes": {},
+  "mouse": {},
+  "keyboard": {},
+  "triggers": {},
+  "mouse_target": "right_stick",
+  "version": 2
+}

@@ -1,0 +1,89 @@
+{
+  "name": "FPS",
+  "description": "Shooter layout: sprint on Shift, crouch on C, reload on R, weapon swap on 1 / mouse wheel, and a precision-aim modifier on Mouse 5.",
+  "bindings": {
+    "LEFT_STICK_UP": [
+      "w"
+    ],
+    "LEFT_STICK_DOWN": [
+      "s"
+    ],
+    "LEFT_STICK_LEFT": [
+      "a"
+    ],
+    "LEFT_STICK_RIGHT": [
+      "d"
+    ],
+    "A": [
+      "space"
+    ],
+    "B": [
+      "c"
+    ],
+    "X": [
+      "r"
+    ],
+    "Y": [
+      "1",
+      "wheel_up",
+      "wheel_down"
+    ],
+    "LB": [
+      "q"
+    ],
+    "RB": [
+      "e"
+    ],
+    "LS_CLICK": [
+      "shift"
+    ],
+    "RS_CLICK": [
+      "v"
+    ],
+    "LEFT_TRIGGER": [
+      "mouse_right"
+    ],
+    "RIGHT_TRIGGER": [
+      "mouse_left"
+    ],
+    "DPAD_UP": [
+      "2"
+    ],
+    "DPAD_DOWN": [
+      "3"
+    ],
+    "DPAD_LEFT": [
+      "4"
+    ],
+    "DPAD_RIGHT": [
+      "5"
+    ],
+    "START": [
+      "enter"
+    ],
+    "BACK": [
+      "tab"
+    ],
+    "WALK_MODIFIER": [
+      "alt"
+    ],
+    "PRECISION_AIM": [
+      "mouse_x2"
+    ]
+  },
+  "modes": {},
+  "mouse": {
+    "sensitivity_x": 1.3,
+    "sensitivity_y": 1.1,
+    "smoothing": 0.2,
+    "anti_deadzone": 0.12,
+    "response_curve": "aggressive"
+  },
+  "keyboard": {
+    "ramp_up_ms": 60,
+    "ramp_down_ms": 60
+  },
+  "triggers": {},
+  "mouse_target": "right_stick",
+  "version": 2
+}

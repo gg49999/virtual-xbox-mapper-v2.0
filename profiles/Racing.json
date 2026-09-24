@@ -1,0 +1,77 @@
+{
+  "name": "Racing",
+  "description": "Driving layout: W/S on the throttle and brake triggers, A/D steer, Space for handbrake. Mouse movement is not used.",
+  "bindings": {
+    "LEFT_STICK_LEFT": [
+      "a",
+      "left"
+    ],
+    "LEFT_STICK_RIGHT": [
+      "d",
+      "right"
+    ],
+    "RIGHT_TRIGGER": [
+      "w",
+      "up"
+    ],
+    "LEFT_TRIGGER": [
+      "s",
+      "down"
+    ],
+    "A": [
+      "space"
+    ],
+    "B": [
+      "backspace"
+    ],
+    "X": [
+      "e"
+    ],
+    "Y": [
+      "c"
+    ],
+    "LB": [
+      "q"
+    ],
+    "RB": [
+      "shift"
+    ],
+    "RIGHT_STICK_LEFT": [
+      "z"
+    ],
+    "RIGHT_STICK_RIGHT": [
+      "x"
+    ],
+    "START": [
+      "enter"
+    ],
+    "BACK": [
+      "tab"
+    ],
+    "DPAD_UP": [
+      "1"
+    ],
+    "DPAD_DOWN": [
+      "2"
+    ],
+    "DPAD_LEFT": [
+      "3"
+    ],
+    "DPAD_RIGHT": [
+      "4"
+    ]
+  },
+  "modes": {},
+  "mouse": {},
+  "keyboard": {
+    "ramp_up_ms": 220,
+    "ramp_down_ms": 160,
+    "acceleration_curve": "linear"
+  },
+  "triggers": {
+    "left_strength": 1.0,
+    "right_strength": 1.0
+  },
+  "mouse_target": "none",
+  "version": 2
+}

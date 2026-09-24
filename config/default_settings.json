@@ -1,0 +1,67 @@
+{
+  "general": {
+    "start_minimized": false,
+    "start_with_windows": false,
+    "minimize_to_tray": true,
+    "auto_enable_controller": true,
+    "emulation_on_launch": true,
+    "auto_load_last_profile": true,
+    "last_profile": "Default",
+    "show_osd": true,
+    "tray_notifications": false
+  },
+  "mouse": {
+    "sensitivity_x": 1.0,
+    "sensitivity_y": 1.0,
+    "deadzone": 0.02,
+    "anti_deadzone": 0.0,
+    "response_curve": "linear",
+    "smoothing": 0.35,
+    "acceleration": 0.0,
+    "max_output": 1.0,
+    "invert_x": false,
+    "invert_y": false,
+    "raw_input": false,
+    "precision_scale": 0.5
+  },
+  "keyboard": {
+    "analog_simulation": true,
+    "ramp_up_ms": 120,
+    "ramp_down_ms": 90,
+    "acceleration_curve": "ease_out",
+    "deadzone": 0.0,
+    "digital_stick_strength": 1.0,
+    "walk_scale": 0.5
+  },
+  "controller": {
+    "tick_rate_hz": 125,
+    "circular_sticks": true,
+    "controller_enabled": true
+  },
+  "capture": {
+    "hide_cursor": true,
+    "release_on_focus_change": true,
+    "use_raw_input": true
+  },
+  "hotkeys": {
+    "toggle_emulation": "f9",
+    "toggle_mouse_capture": "f8",
+    "emergency_release": "f10",
+    "open_app": "ctrl+alt+x",
+    "next_profile": "ctrl+alt+right",
+    "prev_profile": "ctrl+alt+left"
+  },
+  "appearance": {
+    "theme": "dark",
+    "accent": "green",
+    "diagram_style": "model3d",
+    "show_callouts": true,
+    "ui_refresh_hz": 60,
+    "custom_image_path": "",
+    "custom_calibration_path": "",
+    "photo_calibration_path": ""
+  },
+  "advanced": {
+    "log_level": "INFO"
+  }
+}

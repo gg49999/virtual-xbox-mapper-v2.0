@@ -8,7 +8,7 @@
   #define MyAppVersion "2.0.1"
 #endif
 #define MyAppPublisher "VirtualXboxMapper Project"
-#define MyAppURL "https://github.com/gg49999/virtual-xbox-mapper"
+#define MyAppURL "https://github.com/gg49999/virtual-xbox-mapper-v2.0"
 #define MyAppExeName "VirtualXboxMapper.exe"
 #define ViGEmSetup "ViGEmBus_1.22.0_x64_x86_arm64.exe"
 

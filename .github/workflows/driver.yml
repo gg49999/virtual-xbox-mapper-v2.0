@@ -62,7 +62,7 @@ jobs:
       - name: Build DMF
         shell: pwsh
         run: |
-          foreach ($project in 'DmfK', 'DmfKModules.Template') {
+          foreach ($project in 'DmfKFramework', 'DmfKModules.Library', 'DmfKModules.Library.Tests', 'DmfKModules.Template', 'DmfK') {
             msbuild "$env:DmfRootPath\Dmf\Solution\$project\$project.vcxproj" /m /nologo /v:minimal `
               /p:Configuration=Release /p:Platform=x64 `
               /p:SolutionDir=$env:DmfRootPath\ `

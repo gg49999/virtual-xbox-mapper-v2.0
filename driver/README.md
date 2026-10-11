@@ -36,6 +36,10 @@ in [ViGEmBus/XBOX-MODELS.md](ViGEmBus/XBOX-MODELS.md).
    described in its README. The `sdk` submodule
    ([ViGEmClient](https://github.com/nefarius/ViGEmClient)) has to be checked out into
    `driver/ViGEmBus/sdk`.
+   Alternatively, let GitHub build it: the **Driver build** workflow
+   (`.github/workflows/driver.yml`, run by hand from the repository's Actions tab) does
+   the steps above on a hosted Windows runner and uploads a test-signed package as an
+   artifact. It has not been run yet either.
 2. Sign it. A kernel driver you built yourself loads only in Windows test-signing mode
    (development machines; Secure Boot off) or with your own production signature
    obtained through Microsoft's driver signing process. The signature on the stock

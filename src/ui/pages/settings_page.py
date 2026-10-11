@@ -7,11 +7,12 @@ from __future__ import annotations
 import os
 import shutil
 from PyQt6.QtCore import Qt, QRectF, QUrl, pyqtSignal
-from PyQt6.QtGui import QPainter, QPen, QDesktopServices
+from PyQt6.QtGui import QPainter, QPen, QDesktopServices, QStandardItemModel
 from PyQt6.QtWidgets import QComboBox, QFileDialog, QHBoxLayout, QWidget
 
 import keycodes
 from app_info import VIGEMBUS_URL
+from controller_models import DEFAULT_MODEL_ID, MODELS, get_model
 from engine import HOTKEY_ACTIONS, TICK_RATES
 from hotkey_manager import find_duplicate
 from logger import get_logger, set_level, log_file_path
@@ -156,7 +157,7 @@ class SettingsPage(Page):
         return card
 
     def _controller(self) -> Card:
-        card = Card("Virtual controller", "The Xbox 360 controller that Windows and your games see.", icon="gamepad")
+        card = Card("Virtual controller", "The controller that Windows and your games see.", icon="gamepad")
         status_row = QHBoxLayout()
         self.status_pill = StatusPill()
         status_row.addWidget(self.status_pill)
@@ -168,6 +169,21 @@ class SettingsPage(Page):
                                     on_click=lambda: QDesktopServices.openUrl(QUrl(VIGEMBUS_URL)),
                                     tooltip="Download the ViGEmBus driver"))
         card.body().addLayout(status_row)
+        card.add(divider())
+        # Controller type. Entries the installed driver can't present are
+        # listed but disabled; the note below the row says why (_sync_model).
+        self.model_combo = QComboBox()
+        # Keep the box compact - its width would otherwise follow the longest
+        # entry - and let the drop-down list be as wide as its entries need.
+        self.model_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.model_combo.setMinimumContentsLength(26)
+        self.model_combo.activated.connect(lambda index: self._set_model(self.model_combo.itemData(index)))
+        self.model_row = SettingRow("Controller type", "How it identifies itself to Windows and games.",
+                                    self.model_combo)
+        card.add(self.model_row)
+        # What is in effect and why; filled in by _sync_model.
+        self.model_note = label("", "caption", wrap=True)
+        card.add(self.model_note)
         card.add(divider())
         card.add(SettingRow("Connect automatically", "Create the virtual controller when the app starts.",
                             self._toggle("general", "auto_enable_controller")))
@@ -272,10 +288,79 @@ class SettingsPage(Page):
     def _update_status(self) -> None:
         if self.engine.connected:
             self.status_pill.set_status("Connected", "ok")
-            self.status_msg.setText("Windows sees an Xbox 360 controller.")
+            self.status_msg.setText(f"Windows sees an {get_model(self.engine.controller.model).label}.")
         else:
             self.status_pill.set_status("Not connected", "error")
             self.status_msg.setText(self.engine.controller.last_error or "The virtual controller is not connected.")
+        self._sync_model()
+
+    # ---- controller type ---------------------------------------------------
+
+    def _sync_model(self) -> None:
+        """Bring the Controller type row in line with the saved choice and
+        with what the installed driver supports. That can change while the
+        app runs (install the driver, then Reconnect), so this runs on every
+        connection change."""
+        supported = self.engine.controller.supported_models
+        requested = get_model(self.s.get("controller", "model", DEFAULT_MODEL_ID)).id
+        combo = self.model_combo
+        combo.blockSignals(True)
+        combo.clear()
+        item_model = combo.model()
+        for model in MODELS:
+            available = model.id in supported
+            combo.addItem(model.label if available else f"{model.label} - not available", model.id)
+            index = combo.count() - 1
+            combo.setItemData(index, model.summary, Qt.ItemDataRole.ToolTipRole)
+            if not available and isinstance(item_model, QStandardItemModel):
+                item = item_model.item(index)
+                if item is not None:
+                    item.setEnabled(False)
+        combo.setCurrentIndex(max(0, combo.findData(requested if requested in supported else DEFAULT_MODEL_ID)))
+        popup = combo.view()
+        if popup is not None:
+            popup.setMinimumWidth(popup.sizeHintForColumn(0) + 32)
+        combo.blockSignals(False)
+        self.model_note.setText(self._model_description())
+        combo.setAccessibleDescription(self.model_note.text())
+
+    def _model_description(self) -> str:
+        """What the virtual controller is presented as, and why that may not
+        be what was selected."""
+        controller = self.engine.controller
+        supported = controller.supported_models
+        requested = get_model(self.s.get("controller", "model", DEFAULT_MODEL_ID))
+        effective = get_model(controller.model)
+
+        if len(supported) <= 1:
+            text = ("The installed ViGEmBus driver can only present an Xbox 360 controller. The other "
+                    "types need the driver build that ships with this project (see driver/README.md).")
+            if requested.id != DEFAULT_MODEL_ID:
+                text += f" Your saved choice ({requested.label}) applies once it is installed."
+            return text
+
+        text = f"Windows and games see the virtual controller as an {effective.label}."
+        if requested.id not in supported:
+            text += f" Your saved choice ({requested.label}) is not supported by the installed driver."
+        elif requested.id == DEFAULT_MODEL_ID and effective.id != DEFAULT_MODEL_ID:
+            text += (" That is this PC's driver-wide default, which replaces Xbox 360 for every "
+                     "application (driver\\ViGEmBus\\tools\\Set-XboxModel.ps1 changes it).")
+        else:
+            text += " Changing the type re-plugs the controller, so a running game sees a controller swap."
+        return text
+
+    def _set_model(self, model_id) -> None:
+        engine = self.engine
+        model = get_model(model_id)
+        before = engine.controller.model
+        if not engine.set_controller_model(model.id):
+            self.window.toast("Couldn't switch controller type",
+                              engine.controller.last_error or f"The installed driver can't present an {model.label}.",
+                              "error")
+        elif engine.connected and engine.controller.model != before:
+            self.window.toast("Controller type changed",
+                              f"Windows now sees an {get_model(engine.controller.model).label}.", "success")
+        self._update_status()
 
     def _reconnect(self) -> None:
         if self.engine.reconnect_controller():

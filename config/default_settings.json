@@ -36,7 +36,8 @@
   "controller": {
     "tick_rate_hz": 125,
     "circular_sticks": true,
-    "controller_enabled": true
+    "controller_enabled": true,
+    "model": "xbox360"
   },
   "capture": {
     "hide_cursor": true,

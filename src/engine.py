@@ -25,6 +25,7 @@ from logger import get_logger
 from settings_manager import SettingsManager
 from profile_manager import ProfileManager, Profile
 from virtual_controller import VirtualController, VirtualControllerError
+from controller_models import DEFAULT_MODEL_ID, get_model
 from mapping_manager import MappingManager
 from input_manager import InputManager
 from hotkey_manager import HotkeyManager
@@ -250,7 +251,8 @@ class Engine(QObject):
     def connect_controller(self) -> bool:
         try:
             self.controller.connect()
-            self.connection_changed.emit(True, "Virtual Xbox 360 controller connected.")
+            self.connection_changed.emit(
+                True, f"Virtual {get_model(self.controller.model).label} connected.")
             return True
         except VirtualControllerError as exc:
             log.error("%s", exc)
@@ -264,6 +266,30 @@ class Engine(QObject):
     def reconnect_controller(self) -> bool:
         self.controller.disconnect()
         return self.connect_controller()
+
+    def set_controller_model(self, model_id: str) -> bool:
+        """Choose what the virtual controller presents itself as (an id from
+        controller_models.MODELS), remember the choice, and re-plug a
+        connected controller so it takes effect right away - which games
+        notice as the controller being swapped.
+
+        Returns False if the installed driver cannot present that model, or
+        if the controller could not be re-created (the choice is kept)."""
+        model = get_model(model_id)
+        if model.id not in self.controller.supported_models:
+            return False
+        self.settings.set("controller", "model", model.id)
+        return self._apply_controller_model()
+
+    def _apply_controller_model(self) -> bool:
+        wanted = get_model(self.settings.get("controller", "model", DEFAULT_MODEL_ID)).id
+        if wanted == self.controller.requested_model:
+            return True
+        self.controller.set_model(wanted)
+        # Re-plug only if that changes what Windows gets to see.
+        if self.connected and self.controller.presents(wanted) != self.controller.model:
+            return self.reconnect_controller()
+        return True
 
     # ------------------------------------------------------------------
     # Emulation & capture
@@ -424,6 +450,7 @@ class Engine(QObject):
 
     def apply_controller_settings(self) -> None:
         self._tick_hz = self._valid_rate(self.settings.get("controller", "tick_rate_hz", 125))
+        self._apply_controller_model()
         if self.profile:
             self.apply_profile_tuning()
 

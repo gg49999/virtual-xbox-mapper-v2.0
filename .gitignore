@@ -12,6 +12,12 @@ build/
 dist/
 installer/Output/
 
+# Built driver package dropped in for the installer (see installer/driver/README.txt)
+installer/driver/*.inf
+installer/driver/*.sys
+installer/driver/*.cat
+installer/driver/*.exe
+
 # OS / editors
 .DS_Store
 Thumbs.db

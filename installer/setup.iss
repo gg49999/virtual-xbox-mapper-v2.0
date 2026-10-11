@@ -12,6 +12,23 @@
 #define MyAppExeName "VirtualXboxMapper.exe"
 #define ViGEmSetup "ViGEmBus_1.22.0_x64_x86_arm64.exe"
 
+; ---- Which virtual-controller driver the installer ships -----------------------
+; Default: the stock ViGEmBus setup above (unchanged behaviour).
+; BundleModelDriver: the driver built from driver\ViGEmBus instead, which adds
+; the controller types offered under Settings > Virtual controller > Controller
+; type. Put the built package into installer\driver first (see the README.txt
+; there), then compile with
+;     ISCC.exe /DBundleModelDriver /DMyAppVersion=<version> installer\setup.iss
+; or uncomment the next line. This path has NOT been exercised on a real machine
+; yet - see driver\README.md.
+;#define BundleModelDriver
+#ifdef BundleModelDriver
+  #define DriverDir AddBackslash(SourcePath) + "driver"
+  #if !FileExists(DriverDir + "\ViGEmBus.inf") || !FileExists(DriverDir + "\ViGEmBus.sys") || !FileExists(DriverDir + "\ViGEmBus.cat") || !FileExists(DriverDir + "\devcon.exe")
+    #error BundleModelDriver is set, but installer\driver does not hold the built driver package (ViGEmBus.inf, ViGEmBus.sys, ViGEmBus.cat and devcon.exe). See installer\driver\README.txt.
+  #endif
+#endif
+
 ; ---- Guard: never package a stale or missing build ----------------------------
 ; The installer takes the app from build\dist. If that folder holds an old
 ; build (for example the original 1.x app), the installer would silently ship
@@ -63,11 +80,18 @@ RestartApplications=no
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
+#ifdef BundleModelDriver
+Name: "modeldriver"; Description: "Install the virtual controller driver (required; replaces an installed ViGEmBus driver)"; GroupDescription: "Driver:"
+#else
 Name: "vigembus"; Description: "Install the ViGEmBus virtual controller driver (required)"; GroupDescription: "Driver:"; Check: NeedsViGEmBus
+#endif
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
 Name: "startupicon"; Description: "Start {#MyAppName} when I sign in to Windows"; GroupDescription: "Startup:"; Flags: unchecked
 
 [InstallDelete]
+#ifdef BundleModelDriver
+Type: filesandordirs; Name: "{app}\driver"
+#endif
 ; Remove everything the previous version installed before copying the new
 ; build, so no stale runtime files or old UI modules survive an upgrade.
 Type: filesandordirs; Name: "{app}\_internal"
@@ -81,7 +105,19 @@ Type: filesandordirs; Name: "{group}"
 Source: "{#BuildDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+#ifdef BundleModelDriver
+; Driver package built from driver\ViGEmBus. Kept in {app}\driver so it can be
+; (re)installed by hand later with Install-Driver.ps1.
+Source: "driver\ViGEmBus.inf"; DestDir: "{app}\driver"; Flags: ignoreversion
+Source: "driver\ViGEmBus.sys"; DestDir: "{app}\driver"; Flags: ignoreversion
+Source: "driver\ViGEmBus.cat"; DestDir: "{app}\driver"; Flags: ignoreversion
+Source: "driver\devcon.exe"; DestDir: "{app}\driver"; Flags: ignoreversion
+Source: "driver\Install-Driver.ps1"; DestDir: "{app}\driver"; Flags: ignoreversion
+Source: "..\driver\ViGEmBus\tools\Set-XboxModel.ps1"; DestDir: "{app}\driver"; Flags: ignoreversion
+Source: "..\driver\ViGEmBus\LICENSE"; DestDir: "{app}\driver"; DestName: "ViGEmBus-LICENSE.txt"; Flags: ignoreversion
+#else
 Source: "{#ViGEmSetup}"; DestDir: "{tmp}"; Flags: deleteafterinstall skipifsourcedoesntexist; Tasks: vigembus
+#endif
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -96,11 +132,20 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
     ValueName: "VirtualXboxMapper"; Flags: uninsdeletevalue
 
 [Run]
+#ifdef BundleModelDriver
+; Install-Driver.ps1 does nothing if this exact driver file is already in place;
+; otherwise it installs the driver or updates an existing ViGEmBus device to it.
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; \
+    Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File ""{app}\driver\Install-Driver.ps1"""; \
+    StatusMsg: "Installing the virtual controller driver..."; \
+    Flags: waituntilterminated runhidden; Tasks: modeldriver
+#else
 ; Interactive driver setup for normal installs, silent for /SILENT installs.
 Filename: "{tmp}\{#ViGEmSetup}"; StatusMsg: "Installing the ViGEmBus driver..."; \
     Flags: waituntilterminated skipifdoesntexist; Tasks: vigembus; Check: not WizardSilent
 Filename: "{tmp}\{#ViGEmSetup}"; Parameters: "/exenoui /qn /norestart"; StatusMsg: "Installing the ViGEmBus driver..."; \
     Flags: waituntilterminated skipifdoesntexist; Tasks: vigembus; Check: WizardSilent
+#endif
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]

@@ -73,6 +73,8 @@ jobs:
       - name: Build the driver
         shell: pwsh
         run: |
+          # WDK 10.0.26100 defines POOL_ZERO_DOWN_LEVEL_SUPPORT in lkmdtel.h; the project also defines it, so silence the redefinition warning (C4005).
+          $env:CL = '/wd4005'
           msbuild "$env:DRIVER_DIR\sys\ViGEmBus.vcxproj" /m /nologo /v:minimal `
             /p:Configuration=Release /p:Platform=x64 `
             /p:SolutionDir=$env:DRIVER_DIR\ `

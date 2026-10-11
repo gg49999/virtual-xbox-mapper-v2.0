@@ -75,11 +75,16 @@ jobs:
         run: |
           # WDK 10.0.26100 defines POOL_ZERO_DOWN_LEVEL_SUPPORT in lkmdtel.h; the project also defines it, so silence the redefinition warning (C4005).
           $env:CL = '/wd4005'
+          # Newer signtool refuses to sign without a digest algorithm, and the project does not set one.
+          $sign = '<Project><ItemDefinitionGroup><DriverSign><FileDigestAlgorithm>SHA256</FileDigestAlgorithm></DriverSign></ItemDefinitionGroup></Project>'
+          Set-Content "$env:DRIVER_DIR\sys\Directory.Build.props" $sign
+          Set-Content "$env:DRIVER_DIR\sys\Directory.Build.targets" $sign
           msbuild "$env:DRIVER_DIR\sys\ViGEmBus.vcxproj" /m /nologo /v:minimal `
             /p:Configuration=Release /p:Platform=x64 `
             /p:SolutionDir=$env:DRIVER_DIR\ `
             /p:WindowsTargetPlatformVersion=$env:WDK_VERSION `
-            /p:SignMode=TestSign
+            /p:SignMode=TestSign `
+            /p:EnableInfVerif=false
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           Get-ChildItem "$env:DRIVER_DIR\bin" -Recurse -File | ForEach-Object { $_.FullName }
 

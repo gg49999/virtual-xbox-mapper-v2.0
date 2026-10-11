@@ -1,0 +1,99 @@
+name: Driver build
+
+# Compiles the driver in driver/ViGEmBus on a GitHub-hosted Windows runner and
+# uploads the driver package (ViGEmBus.inf / .sys / .cat) as an artifact.
+#
+# Run it by hand: Actions tab > "Driver build" > "Run workflow". It is not
+# triggered by pushes.
+#
+# The package is TEST-SIGNED with a throw-away certificate created during the
+# build. Windows only loads it while test-signing mode is on (see
+# driver/README.md). GitHub cannot give it a production signature; that needs
+# your own certificate and Microsoft's driver signing process.
+#
+# NOTE: this workflow was written without being run, and the driver's new code
+# has never been through the Microsoft compiler. Expect the first run to need
+# fixes; the build log is the thing to look at.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build driver (x64, test-signed)
+    # Pinned on purpose: this image has Visual Studio 2022 and the Windows Driver
+    # Kit. windows-latest has moved on to a newer Visual Studio.
+    runs-on: windows-2022
+    env:
+      DRIVER_DIR: ${{ github.workspace }}\driver\ViGEmBus
+      # sys/Dmf.props reads this to find the Driver Module Framework.
+      DmfRootPath: ${{ github.workspace }}\_deps\DMF
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Find the installed Windows Driver Kit
+        shell: pwsh
+        run: |
+          $include = "${env:ProgramFiles(x86)}\Windows Kits\10\Include"
+          $version = Get-ChildItem $include -Directory |
+            Where-Object { Test-Path (Join-Path $_.FullName 'km\wdm.h') } |
+            Sort-Object { [version]$_.Name } -Descending |
+            Select-Object -First 1 -ExpandProperty Name
+          if (-not $version) {
+            throw "No Windows Driver Kit found on this runner image (no kernel-mode headers under $include)."
+          }
+          Write-Host "Using Windows Driver Kit $version"
+          "WDK_VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Fetch dependencies (ViGEmClient SDK headers, DMF)
+        shell: pwsh
+        run: |
+          $sdk = "$env:DRIVER_DIR\sdk"
+          if (-not (Test-Path "$sdk\include\ViGEm\Common.h")) {
+            if (Test-Path $sdk) { Remove-Item $sdk -Recurse -Force }
+            git clone --depth 1 https://github.com/nefarius/ViGEmClient.git $sdk
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+          git clone --depth 1 https://github.com/microsoft/DMF.git $env:DmfRootPath
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Build DMF
+        shell: pwsh
+        run: |
+          foreach ($project in 'DmfK', 'DmfKModules.Template') {
+            msbuild "$env:DmfRootPath\Dmf\Solution\$project\$project.vcxproj" /m /nologo /v:minimal `
+              /p:Configuration=Release /p:Platform=x64 `
+              /p:SolutionDir=$env:DmfRootPath\ `
+              /p:WindowsTargetPlatformVersion=$env:WDK_VERSION
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+
+      - name: Build the driver
+        shell: pwsh
+        run: |
+          msbuild "$env:DRIVER_DIR\sys\ViGEmBus.vcxproj" /m /nologo /v:minimal `
+            /p:Configuration=Release /p:Platform=x64 `
+            /p:SolutionDir=$env:DRIVER_DIR\ `
+            /p:WindowsTargetPlatformVersion=$env:WDK_VERSION `
+            /p:SignMode=TestSign
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Get-ChildItem "$env:DRIVER_DIR\bin" -Recurse -File | ForEach-Object { $_.FullName }
+
+      - name: Check that the app recognises this build
+        # The app only offers the newer controller types when it finds the model
+        # marker in the installed driver file. Run its own detection on what was
+        # just built.
+        shell: pwsh
+        run: |
+          $sys = Get-ChildItem "$env:DRIVER_DIR\bin" -Recurse -Filter ViGEmBus.sys | Select-Object -First 1
+          if (-not $sys) { throw 'The build did not produce ViGEmBus.sys.' }
+          python -c "import sys; sys.path.insert(0, 'src'); import controller_models as cm; found = cm.read_driver_max_model([sys.argv[1]]); want = max(m.driver_model for m in cm.MODELS); print('highest controller model announced by the build:', found, '- expected', want); sys.exit(0 if found == want else 1)" $sys.FullName
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ViGEmBus-controller-types-x64-testsigned
+          path: driver/ViGEmBus/bin/
+          if-no-files-found: error

@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel
 
 import keycodes
 from app_info import APP_NAME, APP_VERSION, APP_DESCRIPTION, PROJECT_URL, ISSUES_URL, VIGEMBUS_URL
+from controller_models import get_model
 from engine import HOTKEY_ACTIONS
 from ui import icons, theme
 from ui.pages.base import Page
@@ -115,6 +116,8 @@ class AboutPage(Page):
             f"Virtual controller: {'connected' if e.connected else 'not connected'}"
             + (f" ({e.controller.last_error})" if e.controller.last_error else ""),
             f"vgamepad available: {e.controller.is_available}",
+            f"Controller type: {get_model(e.controller.model).label}"
+            f" (selected: {e.controller.requested_model}; driver supports: {', '.join(e.controller.supported_models)})",
             f"Input capture: {'running' if e.input.running else 'unavailable'}"
             + (f" ({e.input_error})" if e.input_error else ""),
             f"Raw Input in use: {e.input.using_raw_input}",

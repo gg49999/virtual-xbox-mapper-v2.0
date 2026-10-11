@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### New
+- **Controller type** (Settings › Virtual controller): present the virtual controller as
+  an Xbox 360, Xbox One, Xbox One S, Xbox Elite Series 2, or Xbox Series X|S controller.
+  The choice is saved in `controller.model`, used for the first connection at launch,
+  and applied immediately when changed by re-plugging the virtual controller. The
+  Settings page, the status tooltip, and **About › Copy diagnostics** show the type in
+  effect.
+- `driver/ViGEmBus`: source of a ViGEmBus build that adds the newer controller types,
+  plus `installer/driver` with an install script and an opt-in installer switch
+  (`/DBundleModelDriver`) to ship it. Source only: not yet compiled, signed, or run on
+  Windows. See `driver/README.md`.
+- The app checks the installed driver for model support before offering or requesting
+  anything other than Xbox 360, because the stock driver breaks the virtual controller
+  when asked for a newer one. Unsupported types are listed but greyed out.
+
 ## 2.0.1
 
 Fixes the Windows installer, which could install the original 1.x interface

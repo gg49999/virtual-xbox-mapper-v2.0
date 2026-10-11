@@ -128,6 +128,32 @@ Command-line options:
    capture the mouse, and mouse movement becomes right-stick aiming.
 4. Press **F8** again to release the mouse. Press **F10** at any time to release *everything*.
 
+## Controller type
+
+**Settings › Virtual controller › Controller type** selects what the virtual controller
+presents itself as to Windows and games:
+
+| Controller type | Needs |
+|---|---|
+| Xbox 360 Controller (default) | any ViGEmBus driver |
+| Xbox One Controller | the driver build in `driver/ViGEmBus` |
+| Xbox One S Controller | the driver build in `driver/ViGEmBus` |
+| Xbox Elite Series 2 Controller | the driver build in `driver/ViGEmBus` |
+| Xbox Series X\|S Controller | the driver build in `driver/ViGEmBus` |
+| Xbox Series X\|S Controller (Bluetooth identity) | the driver build in `driver/ViGEmBus` |
+
+Your bindings and profiles are the same for every type. Only the controller's identity
+changes, which is what decides the name and button glyphs that games and Steam show.
+Changing the type unplugs the virtual controller and plugs it back in, so a running game
+sees a controller swap.
+
+Types the installed driver can't present are listed but greyed out. The stock ViGEmBus
+driver only knows the Xbox 360 controller, and the app checks the installed driver before
+offering anything else, because asking the stock driver for a newer controller leaves the
+virtual controller dead. The driver build in `driver/ViGEmBus` has to be compiled and
+signed before it can be installed, and **it has not been run on a real machine yet**. See
+[driver/README.md](driver/README.md).
+
 ## Default hotkeys
 
 | Action | Default |
@@ -234,6 +260,7 @@ src/
   mouse_controller.py     Mouse velocity → stick shaping
   keyboard_controller.py  Key → analog ramping
   virtual_controller.py   ViGEmBus / vgamepad backend
+  controller_models.py    Controller types and detection of what the installed driver supports
   keycodes.py             Canonical key names shared by every capture path
   profile_manager.py      Profile model, validation and storage
   settings_manager.py     App settings with defaults, validation and migration
@@ -250,7 +277,9 @@ src/
     theme.py, icons.py, osd.py, qt_keys.py
 profiles/                 Example profiles copied to the user folder on first run
 config/default_settings.json  First-run defaults (packagers can customise)
+driver/                   Source of the driver build that adds the newer controller types (see driver/README.md)
 installer/                PyInstaller spec, build script, Inno Setup script, ViGEmBus setup
+  driver/                 Drop-in folder and install script for the built driver package
 tests/                    Unit tests + headless UI smoke tests
 ```
 

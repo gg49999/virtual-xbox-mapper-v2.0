@@ -32,6 +32,7 @@ from PyQt6.QtWidgets import (
 
 import keycodes
 from app_info import APP_NAME, VIGEMBUS_URL
+from controller_models import get_model
 from engine import Engine
 from logger import get_logger
 from paths import resource_path
@@ -331,9 +332,12 @@ class MainWindow(QMainWindow):
     def _on_connection(self, connected: bool, message: str) -> None:
         if connected:
             self.status_pill.set_status("Controller connected", "ok")
+            self.status_pill.setToolTip(
+                f"{get_model(self.engine.controller.model).label} connected — click for details")
             self.hide_banner("driver")
         else:
             self.status_pill.set_status("Controller not connected", "error")
+            self.status_pill.setToolTip("Virtual controller status — click for details")
             self.show_banner(
                 "Virtual controller not connected",
                 "Install the ViGEmBus driver (free, one-time), then press Reconnect. "

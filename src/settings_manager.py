@@ -15,6 +15,7 @@ import json
 import os
 from typing import Any, Dict
 
+from controller_models import MODELS
 from logger import get_logger
 
 log = get_logger("Settings")
@@ -62,6 +63,7 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
         "tick_rate_hz": 125,
         "circular_sticks": True,
         "controller_enabled": True,
+        "model": "xbox360",                # what the virtual controller presents itself as
     },
     "capture": {
         "hide_cursor": True,
@@ -105,6 +107,7 @@ CHOICES = {
     ("appearance", "theme"): ("dark", "light", "system"),
     ("appearance", "diagram_style"): ("model3d", "vector", "photo", "custom"),
     ("advanced", "log_level"): ("DEBUG", "INFO", "WARNING", "ERROR"),
+    ("controller", "model"): tuple(m.id for m in MODELS),
 }
 
 
